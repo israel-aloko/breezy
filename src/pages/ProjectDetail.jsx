@@ -147,25 +147,34 @@ export default function ProjectDetail() {
         <div className="p-4 md:p-8 max-w-4xl mx-auto mt-20">
 
             <div className="flex items-start justify-between mb-2 gap-4">
-                <h1 className="text-2xl font-semibold text-stone-900">{project.name}</h1>
+    <h1 className="text-2xl font-semibold text-stone-900">{project.name}</h1>
 
-                {isAdmin && (
-                    <div className="flex gap-2 flex-shrink-0">
-                        <button
-                            onClick={() => setShowEditForm(true)}
-                            className="cursor-pointer px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={handleDeleteClick}
-                            className="cursor-pointer px-3 py-2 rounded-lg border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition"
-                        >
-                            Delete
-                        </button>
-                    </div>
-                )}
-            </div>
+    <div className="flex gap-2 flex-shrink-0">
+        <button
+            onClick={() => navigate(`/projects/${id}/tasks`)}
+            className="cursor-pointer px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-semibold hover:bg-green-800 transition shadow-sm"
+        >
+            View Board
+        </button>
+
+        {isAdmin && (
+            <>
+                <button
+                    onClick={() => setShowEditForm(true)}
+                    className="cursor-pointer px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                >
+                    Edit
+                </button>
+                <button
+                    onClick={handleDeleteClick}
+                    className="cursor-pointer px-3 py-2 rounded-lg border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition"
+                >
+                    Delete
+                </button>
+            </>
+        )}
+    </div>
+</div>
 
             {project.description && (
                 <p className="text-stone-600 mb-2">{project.description}</p>

@@ -17,6 +17,7 @@ import { setUser } from './features/reducers/authSlice'
 import ProjectDetail from './pages/ProjectDetail'
 import MyInvites from './pages/MyInvites'
 import InviteLanding from './pages/InviteLanding'
+import TaskBoard from './pages/TaskBoard'
 
 export default function App() {
 
@@ -87,6 +88,10 @@ export default function App() {
           {
           path: "invites/:token",
             element: <InviteLanding/>
+          },
+          {
+          path: "projects/:id/tasks",
+            element: <TaskBoard/>
           },
 
       ]
