@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function SignUp() {
 
@@ -12,6 +12,8 @@ export default function SignUp() {
     const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const inviteToken = searchParams.get('invite') // null if not present, e.g. a normal signup
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -35,7 +37,8 @@ export default function SignUp() {
                     fullname,
                     email,
                     password,
-                    role: "user" //default role for now.
+                    role: "user", //default role for now.
+                    ...(inviteToken && { inviteToken }), // only included when this signup came from an invite link
                 }),
             });
 
@@ -53,7 +56,7 @@ export default function SignUp() {
                 });
             } else if (response.status === 400) {
                 const message = await response.json();
-                toast.error("Please should have....", {
+                toast.error(message || "Please check your details and try again.", {
                     id: toastId,
                 });
             } else {
@@ -86,6 +89,12 @@ export default function SignUp() {
                 <div className="p-4">
                     <h1 className="text-center text-2xl text-gray-800 font-semibold">Sign Up</h1>
                 </div>
+
+                {inviteToken && (
+                    <div className="w-[80vw] md:w-[50vw] bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-2 mb-2 text-sm text-center">
+                        You're signing up from a project invite — you'll join automatically once verified.
+                    </div>
+                )}
 
                 <div className="flex flex-col">
                     <form onSubmit={handleSubmit} className="flex flex-col gap-5 rounded-lg w-[80vw] md:w-[50vw]">
@@ -143,9 +152,7 @@ export default function SignUp() {
                             />
                         </div>
 
-
-
-                        <button
+                          <button
                             type="submit"
                             disabled={loading}
                             className="cursor-pointer w-full flex items-center justify-center px-6 py-3 rounded-lg bg-green-800 hover:bg-green-700 text-white font-bold transition-all">

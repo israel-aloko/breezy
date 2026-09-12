@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from './components/Header'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import Homepage from './pages/Homepage'
@@ -12,10 +12,22 @@ import VerifyEmail from './pages/VerifyEmail'
 import ForgotPassword from './pages/ForgotPassword'
 import VerifyResetCode from './pages/VerifyResetCode'
 import ResetPassword from './pages/ResetPassword'
+import ProjectsDashboard from './pages/ProjectsDashboard'
+import { setUser } from './features/reducers/authSlice'
+import ProjectDetail from './pages/ProjectDetail'
+import MyInvites from './pages/MyInvites'
+import InviteLanding from './pages/InviteLanding'
 
 export default function App() {
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("loggedInUser");
+    if (stored) {
+      dispatch(setUser(JSON.parse(stored)));
+    }
+  }, []);
 
   function PageLayout() {
     return <>
@@ -60,6 +72,23 @@ export default function App() {
           path: "reset-password",
             element: <ResetPassword/>
           },
+          {
+          path: "projectdashboard",
+            element: <ProjectsDashboard/>
+          },
+          {
+          path: "projects/:id",
+            element: <ProjectDetail/>
+          },
+          {
+          path: "myinvites",
+            element: <MyInvites/>
+          },
+          {
+          path: "invites/:token",
+            element: <InviteLanding/>
+          },
+
       ]
     }
   ]);
