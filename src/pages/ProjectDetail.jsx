@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import ProjectFormModal from '../components/ProjectFormModal'
 import InviteMemberModal from '../components/InviteMemberModal'
+import JoinCodeCard from '../components/JoinCodeCard'
+import JoinRequestsPanel from '../components/JoinRequestsPanel'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -147,34 +149,34 @@ export default function ProjectDetail() {
         <div className="p-4 md:p-8 max-w-4xl mx-auto mt-20">
 
             <div className="flex items-start justify-between mb-2 gap-4">
-    <h1 className="text-2xl font-semibold text-stone-900">{project.name}</h1>
+                <h1 className="text-2xl font-semibold text-stone-900">{project.name}</h1>
 
-    <div className="flex gap-2 flex-shrink-0">
-        <button
-            onClick={() => navigate(`/projects/${id}/tasks`)}
-            className="cursor-pointer px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-semibold hover:bg-green-800 transition shadow-sm"
-        >
-            View Board
-        </button>
+                <div className="flex gap-2 flex-shrink-0">
+                    <button
+                        onClick={() => navigate(`/projects/${id}/tasks`)}
+                        className="cursor-pointer px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-semibold hover:bg-green-800 transition shadow-sm"
+                    >
+                        View Board
+                    </button>
 
-        {isAdmin && (
-            <>
-                <button
-                    onClick={() => setShowEditForm(true)}
-                    className="cursor-pointer px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
-                >
-                    Edit
-                </button>
-                <button
-                    onClick={handleDeleteClick}
-                    className="cursor-pointer px-3 py-2 rounded-lg border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition"
-                >
-                    Delete
-                </button>
-            </>
-        )}
-    </div>
-</div>
+                    {isAdmin && (
+                        <>
+                            <button
+                                onClick={() => setShowEditForm(true)}
+                                className="cursor-pointer px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={handleDeleteClick}
+                                className="cursor-pointer px-3 py-2 rounded-lg border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition"
+                            >
+                                Delete
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
 
             {project.description && (
                 <p className="text-stone-600 mb-2">{project.description}</p>
@@ -184,7 +186,7 @@ export default function ProjectDetail() {
                 <p className="text-sm text-stone-500 mb-6">Deadline: {formattedDeadline}</p>
             )}
 
-            {/* Join code controls go here (admin only) — separate feature to build next */}
+            {/* join code controls */}
             {isAdmin && (
                 <div className="mb-6 flex items-center justify-between p-4 rounded-lg border border-gray-100">
                     <div>
@@ -200,11 +202,10 @@ export default function ProjectDetail() {
                 </div>
             )}
 
-            {/* Join requests section (admin only) — separate feature to build next */}
+            {isAdmin && <JoinCodeCard projectId={project._id} />}
+
             {isAdmin && (
-                <div className="mb-6 p-4 rounded-lg border border-dashed border-gray-200 text-sm text-gray-400">
-                    Pending join requests go here.
-                </div>
+                <JoinRequestsPanel projectId={project._id} onMemberAdded={fetchProject} />
             )}
 
             <div className="border-t border-gray-100 pt-4">

@@ -27,7 +27,7 @@ export default function InviteMemberModal({ projectId, onClose, onSent }) {
                 })
                 const data = await res.json()
 
-                if (data.exists) {
+            if (data.exists) {
                     setLookupStatus('found')
                     setLookupName(data.fullname)
                 } else {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import ProjectCard from '../components/ProjectCard'
 import ProjectFormModal from '../components/ProjectFormModal'
+import JoinWithCodeModal from '../components/JoinWithCodeModal'
 
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -11,6 +12,7 @@ export default function ProjectsDashboard() {
     const [projects, setProjects] = useState([])
     const [loading, setLoading] = useState(false)
     const [showForm, setShowForm] = useState(false)
+    const [showJoinModal, setShowJoinModal] = useState(false)
 
     const fetchProjects = async () => {
         setLoading(true)
@@ -44,12 +46,20 @@ export default function ProjectsDashboard() {
 
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-semibold">My Projects</h1>
-                <button
-                    onClick={() => setShowForm(true)}
-                    className="cursor-pointer bg-green-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-green-800 transition shadow-sm"
-                >
-                    + New Project
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowJoinModal(true)}
+                        className="cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                    >
+                        Join with code
+                    </button>
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="cursor-pointer bg-green-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-green-800 transition shadow-sm"
+                    >
+                        + New Project
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -73,6 +83,10 @@ export default function ProjectsDashboard() {
                     onClose={() => setShowForm(false)}
                     onSaved={() => { setShowForm(false); fetchProjects() }}
                 />
+            )}
+
+            {showJoinModal && (
+                <JoinWithCodeModal onClose={() => setShowJoinModal(false)} />
             )}
         </div>
     )
