@@ -92,7 +92,7 @@ export default function SignUp() {
 
                 {inviteToken && (
                     <div className="w-[80vw] md:w-[50vw] bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-2 mb-2 text-sm text-center">
-                        You're signing up from a project invite — you'll join automatically once verified.
+                        You're signing up from a project invite. You'll join automatically once verified.
                     </div>
                 )}
 

@@ -18,6 +18,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import MyInvites from './pages/MyInvites'
 import InviteLanding from './pages/InviteLanding'
 import TaskBoard from './pages/TaskBoard'
+import ProjectActivity from './pages/ProjectActivity'
 
 export default function App() {
 
@@ -92,6 +93,10 @@ export default function App() {
           {
           path: "projects/:id/tasks",
             element: <TaskBoard/>
+          },
+          {
+          path: "projects/:id/activity",
+            element: <ProjectActivity/>
           },
 
       ]

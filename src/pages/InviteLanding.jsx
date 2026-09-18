@@ -112,9 +112,9 @@ export default function InviteLanding() {
           <span className="font-medium">{invite.invitedBy?.fullname}</span> invited you to join{' '}
           <span className="font-medium">{invite.project?.name}</span>.
         </p>
-        <p className="text-sm text-stone-500 mb-6">Create an account to accept this invite — you'll join the project automatically once you're verified.</p>
+        <p className="text-sm text-stone-500 mb-6">Create an account to accept this invite. You'll join the project automatically once you're verified.</p>
         <Link
-          to={`/register?invite=${token}`}
+          to={`/signup?invite=${token}`}
           className="inline-block px-4 py-2.5 rounded-lg bg-green-700 hover:bg-green-800 text-white font-semibold text-sm transition"
         >
           Create an account

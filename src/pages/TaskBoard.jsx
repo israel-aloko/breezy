@@ -13,7 +13,7 @@ const COLUMNS = [
     { key: 'done', label: 'Done' },
 ]
 
-export default function ProjectBoard() {
+export default function TaskBoard() {
     const { id } = useParams()
     const navigate = useNavigate()
     const currentUserId = useSelector(state => state.auth.userId)

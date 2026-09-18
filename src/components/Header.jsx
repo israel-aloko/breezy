@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { LOGOS } from '../assets'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { FaShoppingCart, FaUser,FaBoxOpen, FaRegHeart } from 'react-icons/fa'
+import { FaShoppingCart, FaUser, FaBoxOpen, FaRegHeart } from 'react-icons/fa'
 import { RiMenu3Fill } from 'react-icons/ri'
 import { logout } from '../features/reducers/authSlice'
 import { FiLogOut } from 'react-icons/fi'
@@ -16,10 +16,32 @@ import { LuMailPlus } from 'react-icons/lu'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
+// Same idea as the ProjectActivity formatter — turns a notification's
+// raw type/metadata into a readable sentence for the dropdown.
+const describeNotification = (n) => {
+  const actorName = n.actor?.fullname || 'Someone'
+  const { type, metadata = {} } = n
+
+  switch (type) {
+    case 'task_assigned':
+      return metadata.previousAssignee
+        ? `You were unassigned from "${metadata.taskTitle}"`
+        : `${actorName} assigned you to "${metadata.taskTitle}"`
+    case 'task_status_changed':
+      return `${actorName} moved "${metadata.taskTitle}" to ${metadata.to}`
+    case 'task_deleted':
+      return `${actorName} deleted "${metadata.taskTitle}"`
+    case 'member_joined':
+      return `${actorName} joined your project`
+    default:
+      return `${actorName} did something`
+  }
+}
+
 export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const auth = useSelector((state) => state.auth);
   const loggedIn = auth.isAuthenticated;
 
@@ -33,7 +55,7 @@ export default function Header() {
 
   const [navOpen, setNavOpen] = useState(false);
 
-  const notifications = useSelector((state) => state.notifications);
+  const [notifications, setNotifications] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
 
   const [invites, setInvites] = useState([]);
@@ -55,8 +77,24 @@ export default function Header() {
     }
   }
 
+  const fetchNotifications = async () => {
+    if (!loggedIn) return;
+    try {
+      const res = await fetch(`${BASE_URL}/api/notifications/mine`, {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNotifications(data.notifications);
+      }
+    } catch (error) {
+      console.log('Error fetching notifications', error);
+    }
+  }
+
   useEffect(() => {
     fetchInvites();
+    fetchNotifications();
   }, [loggedIn]);
 
   const respondToInvite = async (token, action) => {
@@ -88,18 +126,59 @@ export default function Header() {
     }
   }
 
+  // Marks it read (optimistic, so the badge updates immediately without
+  // waiting on the network) then navigates to the relevant page.
+  const handleNotificationClick = async (notification) => {
+    setNotifications(prev =>
+      prev.map(n => n._id === notification._id ? { ...n, read: true } : n)
+    );
+    setNotifOpen(false);
+
+    try {
+      await fetch(`${BASE_URL}/api/notifications/${notification._id}/read`, {
+        method: 'PATCH',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.log('Error marking notification as read', error);
+    }
+
+    const destination = notification.type === 'member_joined'
+      ? `/projects/${notification.project}`
+      : `/projects/${notification.project}/tasks`;
+
+    navigate(destination);
+  }
+
+  const handleClearAll = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/notifications/read-all`, {
+        method: 'PATCH',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to clear notifications');
+    } catch (error) {
+      toast.error(error.message || "Couldn't clear notifications.");
+      fetchNotifications(); // resync on failure since we optimistically updated
+    }
+  }
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   useEffect(() => {
     window.scrollTo(0, 0)
-      return () => {
-        setNavOpen(false)
-      }
+    return () => {
+      setNavOpen(false)
+    }
   }, [location.pathname]);
 
   const navLinks = [
-    { id: "1230", name: 'Project', path: '/projectdashboard' },
-    { id: "1231", name: 'Timeline', path: '/shop' },
-    { id: "1232", name: 'About', path: '/about' },
-    { id: "1233", name: 'Contact', path: '/contact' },
+    // { id: "1230", name: 'Project', path: '/projectdashboard' },
+    // { id: "1231", name: 'Timeline', path: '/shop' },
+    // { id: "1232", name: 'About', path: '/about' },
+    // { id: "1233", name: 'Contact', path: '/contact' },
   ]
 
   const [results, setResults] = useState([]);
@@ -110,8 +189,8 @@ export default function Header() {
 
         <a href="/"><img className='w-[45vw] md:w-[25vw]' src={LOGOS.izzyroots_logo} alt="" /></a>
 
-        <SearchBar setResults={setResults}/>
-        <SearchResultsList results={results}/>
+        <SearchBar setResults={setResults} />
+        <SearchResultsList results={results} />
 
         <nav className={`flex flex-col md:flex-row justify-between items-center gap-4 md:gap-9 ${navOpen ? "block absolute top-16 left-0 bg-white w-full border-2 border-green-800" : "hidden md:flex"} md:static md:w-auto md:p-0`}>
           {
@@ -123,6 +202,10 @@ export default function Header() {
             ))}
         </nav>
 
+        <div className="relative">
+          <a href="/projectdashboard" className="flex items-center bg-green-700 hover:bg-green-800 text-white px-4 rounded-lg transition cursor-pointer">create</a>
+        </div>
+
         <div className="flex flex-row justify-between items-center gap-4 md:gap-8 text-2xl pr-1.5">
           {!loggedIn ? (
             <a href="/login">
@@ -131,17 +214,17 @@ export default function Header() {
           ) : (
             <>
               <button
-              onClick={handleLogout}
-              className="cursor-pointer flex items-center gap-1 text-green-900 hover:text-red-600 duration-300 ease-in-out"
+                onClick={handleLogout}
+                className="cursor-pointer flex items-center gap-1 text-green-900 hover:text-red-600 duration-300 ease-in-out"
               >
                 <FiLogOut />
                 <span className="hidden md:inline text-sm">Logout</span>
               </button>
 
-              
+
             </>
           )}
-          
+
           <div className="relative">
             <LuMailPlus
               onClick={() => { setInviteOpen(!inviteOpen); if (!inviteOpen) fetchInvites(); }}
@@ -183,16 +266,40 @@ export default function Header() {
           </div>
 
           <div className="relative">
-            <IoNotifications onClick={() => setNotifOpen(!notifOpen)} className='text-teal-900 hover:text-teal-600 duration-300 ease-in-out cursor-pointer' />
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 rounded-full">{notifications?.length ?? 0}</span>
+            <IoNotifications
+              onClick={() => { setNotifOpen(!notifOpen); if (!notifOpen) fetchNotifications(); }}
+              className='text-teal-900 hover:text-teal-600 duration-300 ease-in-out cursor-pointer'
+            />
+            {unreadCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 rounded-full">{unreadCount}</span>
+            )}
             {notifOpen && (
-              <div className="absolute right-0 top-10 bg-white border-2 border-teal-800 rounded-2xl text-base w-72 py-2 z-50">
-                {notifications && notifications.map((n) => (
-                  <div key={n.id} className="px-4 py-2 hover:bg-gray-50">
-                    <p className="text-sm font-semibold">{n.text}</p>
-                    <p className="text-xs text-gray-500">{n.time}</p>
-                  </div>
-                ))}
+              <div className="absolute right-0 top-10 bg-white border-2 border-teal-800 rounded-2xl text-base w-80 py-2 z-50 max-h-96 overflow-y-auto">
+                <div className="flex items-center justify-between px-4 pb-2 border-b border-gray-50">
+                  <span className="text-xs font-semibold text-gray-400 uppercase">Notifications</span>
+                  {notifications.some(n => !n.read) && (
+                    <button
+                      onClick={handleClearAll}
+                      className="cursor-pointer text-xs font-medium text-teal-700 hover:text-teal-900"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+                {notifications.length === 0 ? (
+                  <p className="px-4 py-3 text-sm text-gray-500 text-center">No notifications</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n._id}
+                      onClick={() => handleNotificationClick(n)}
+                      className={`cursor-pointer px-4 py-2.5 hover:bg-gray-50 border-b border-gray-50 last:border-0 ${!n.read ? 'bg-teal-50/50' : ''}`}
+                    >
+                      <p className="text-sm font-medium text-stone-800">{describeNotification(n)}</p>
+                      <p className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
