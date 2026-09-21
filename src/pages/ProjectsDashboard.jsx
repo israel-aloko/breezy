@@ -42,8 +42,7 @@ export default function ProjectsDashboard() {
     }, [])
 
     return (
-        <div className="p-4 md:p-8 mt-20">
-
+        <div className="p-4 md:p-8">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-semibold">My Projects</h1>
                 <div className="flex gap-2">

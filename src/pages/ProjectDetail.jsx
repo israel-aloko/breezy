@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import ProjectFormModal from '../components/ProjectFormModal'
 import InviteMemberModal from '../components/InviteMemberModal'
 import { IoPersonAddSharp } from 'react-icons/io5'
+import TaskBoard from './TaskBoard'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -103,7 +104,7 @@ export default function ProjectDetail() {
         : null
 
     return (
-        <div className="p-4 md:p-8 max-w-4xl mx-auto mt-20">
+        <div className="p-4 md:p-8 max-w-4xl mx-auto">
 
             <div className="flex items-start justify-between mb-2 gap-4">
                 <h1 className="text-2xl font-semibold text-stone-900">{project.name}</h1>
@@ -184,6 +185,8 @@ export default function ProjectDetail() {
                     onUpdated={fetchProject}
                 />
             )}
+
+        {/* <TaskBoard/> */}
 
         </div>
     )

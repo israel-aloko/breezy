@@ -7,6 +7,7 @@ const authSlice = createSlice({
         fullname: null,
         role: null,
         isAuthenticated: false,
+        authChecked: false, //addition
     },
     reducers: {
         setUser(state, action) {

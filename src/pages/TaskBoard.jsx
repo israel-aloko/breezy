@@ -74,7 +74,7 @@ export default function TaskBoard() {
     }
 
     return (
-        <div className="p-4 md:p-8 max-w-6xl mx-auto mt-20">
+        <div className="p-4 md:p-8 max-w-6xl mx-auto">
 
             <div className="flex items-start justify-between mb-6 gap-4">
                 <div>
