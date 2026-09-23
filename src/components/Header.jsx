@@ -356,6 +356,9 @@ const describeNotification = (n, currentUserId) => {
 
     case 'comment_reply':
       return `${actorName} replied to your comment on "${metadata.taskTitle}"`
+
+    case 'comment_added':
+      return `${actorName} commented on "${metadata.taskTitle}": "${metadata.excerpt}"`
       
     default:
       return `${actorName} did something`
