@@ -15,8 +15,9 @@ const PRIORITY_STYLES = {
     high: 'bg-red-100 text-red-700',
 }
 
-export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEdit }) {
+export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEdit, onOpen }) {
     const [updating, setUpdating] = useState(false)
+    const [deleting, setDeleting] = useState(false)
 
     const isAssignee = task.assignedTo && task.assignedTo._id === currentUserId
     const isUnassigned = !task.assignedTo
@@ -56,8 +57,61 @@ export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEd
         }
     }
 
+    const performDelete = async () => {
+        setDeleting(true)
+        try {
+            const res = await fetch(`${BASE_URL}/api/tasks/${task._id}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to delete task')
+            }
+
+            toast.success('Task deleted')
+            onUpdated()
+        } catch (error) {
+            toast.error(error.message)
+        } finally {
+            setDeleting(false)
+        }
+    }
+
+    const handleDeleteClick = (e) => {
+        e.stopPropagation()
+
+        toast((t) => (
+            <div className="flex items-center gap-3">
+                <span className="text-sm text-stone-700">
+                    Delete <span className="font-medium">"{task.title}"</span>
+                </span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t.id)
+                            performDelete()
+                        }}
+                        className="cursor-pointer text-xs font-semibold text-red-600 hover:text-red-700"
+                    >
+                        Confirm
+                    </button>
+                    <button 
+                        onClick={() => toast.dismiss(t.id)}
+                        className="cursor-pointer text-xs font-medium text-stone-400 hover:text-stone-600">
+                            Cancel
+                    </button>
+                </div>
+            </div>
+        ), {duration: 8000})
+    }
+
     return (
-        <div className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm">
+        <div
+            onClick={() => onOpen(task)}
+            className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm cursor-pointer hover:border-green-700/40 hover:shadow-sm duration-200">
             <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className="text-sm font-medium text-stone-800">{task.title}</h3>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -66,10 +120,20 @@ export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEd
                     </span>
                     {isAdmin && (
                         <button
-                            onClick={() => onEdit(task)}
+                            onClick={(e) => { e.stopPropagation(); onEdit(task) }}
+                            // onClick={() => onEdit(task)}
                             className="cursor-pointer text-xs font-medium text-stone-400 hover:text-green-700 transition"
                         >
                             Edit
+                        </button>
+                    )}
+                    {isAdmin && (
+                        <button
+                            onClick={handleDeleteClick}
+                            disabled={deleting}
+                            className="cursor-pointer text-xs font-medium text-stone-400 hover:text-red-600 transition disabled:opacity-50"
+                        >
+                            Delete
                         </button>
                     )}
                 </div>
@@ -97,6 +161,7 @@ export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEd
                 <select
                     value={task.status}
                     onChange={handleStatusChange}
+                    onClick={(e) => e.stopPropagation()}
                     disabled={updating}
                     className="cursor-pointer w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 text-stone-600 disabled:opacity-50"
                 >

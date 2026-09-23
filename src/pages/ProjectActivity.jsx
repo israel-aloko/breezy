@@ -33,6 +33,9 @@ const describeActivity = (activity) => {
         
         case 'project_created':
             return `${actorName} created the project`
+        
+        case 'comment_added':
+            return `${actorName} commented on "${metadata.taskTitle}"`
 
         default: 
             return `${actorName} did something`

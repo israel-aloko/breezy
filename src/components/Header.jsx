@@ -347,6 +347,16 @@ const describeNotification = (n, currentUserId) => {
       return `${actorName} deleted "${metadata.taskTitle}"`
     case 'member_joined':
       return `${actorName} joined your project`
+    // case 'comment_mention':
+    //   return `${actorName} mentioned you in a comment on "${metadata.taskTitle}"`
+
+    case 'comment_mention':
+      return `${actorName} mentioned you in a comment on "${metadata.taskTitle}": "${metadata.excerpt}"`
+    
+
+    case 'comment_reply':
+      return `${actorName} replied to your comment on "${metadata.taskTitle}"`
+      
     default:
       return `${actorName} did something`
   }

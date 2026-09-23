@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import TaskCard from '../components/TaskCard'
 import TaskFormModal from '../components/TaskFormModal'
+import TaskDetailModal from '../components/TaskDetailModal'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -23,6 +24,7 @@ export default function TaskBoard() {
     const [loading, setLoading] = useState(false)
     const [showTaskForm, setShowTaskForm] = useState(false)
     const [editingTask, setEditingTask] = useState(null)
+    const [selectedTask, setSelectedTask] = useState(null)
 
     // Fetches project (for name, header, and the members list the
     // TaskFormModal needs for its assignee dropdown) and tasks in parallel.
@@ -114,6 +116,7 @@ export default function TaskBoard() {
                                         currentUserId={currentUserId}
                                         onUpdated={fetchBoardData}
                                         onEdit={(t) => { setEditingTask(t); setShowTaskForm(true) }}
+                                        onOpen={(t) => setSelectedTask(t)}
                                     />
                                 ))
                             ) : (
@@ -133,6 +136,15 @@ export default function TaskBoard() {
                     task={editingTask}
                     onClose={() => { setShowTaskForm(false); setEditingTask(null) }}
                     onSaved={() => { setShowTaskForm(false); setEditingTask(null); fetchBoardData() }}
+                />
+            )}
+
+            {selectedTask && (
+                <TaskDetailModal
+                    task={selectedTask}
+                    members={project.members}
+                    currentUserId={currentUserId}
+                    onClose={() => setSelectedTask(null)}
                 />
             )}
         </div>
