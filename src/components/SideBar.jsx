@@ -25,9 +25,9 @@ export default function SideBar() {
                 <div className="flex flex-col h-full">
                     <div className="flex flex-col items-center p-6 border-b border-[#27614a]">
                         <a href="/"><img className="w-[12vw]" src={LOGOS.greenlogo} alt="" /></a>
-                        <h1 className="text-sm font-bold">
+                        {/* <h1 className="text-sm font-bold">
                             MAIN MENU
-                        </h1>
+                        </h1> */}
                     </div>
 
                     <nav className="flex flex-col p-4 gap-2 flex-1">

@@ -345,8 +345,9 @@ const describeNotification = (n, currentUserId) => {
       return `${actorName} moved "${metadata.taskTitle}" to ${metadata.to}`
     case 'task_deleted':
       return `${actorName} deleted "${metadata.taskTitle}"`
+
     case 'member_joined':
-      return `${actorName} joined your project`
+      return `${actorName} joined ${metadata.projectName || 'your project'}`
     // case 'comment_mention':
     //   return `${actorName} mentioned you in a comment on "${metadata.taskTitle}"`
 
@@ -359,11 +360,33 @@ const describeNotification = (n, currentUserId) => {
 
     case 'comment_added':
       return `${actorName} commented on "${metadata.taskTitle}": "${metadata.excerpt}"`
+
+    case 'join_request_received':
+      return `${actorName} requested to join ${metadata.projectName || 'your project'}`
+    
+    case 'join_request_approved':
+      return `${actorName} approved your request to join ${metadata.projectName || 'the project'}`
+
+    case 'join_request_rejected':
+      return `Your request to join ${metadata.projectName || 'the project'} was declined`
       
     default:
       return `${actorName} did something`
   }
 }
+
+const getNotificationDestination = (n) => {
+    switch (n.type) {
+      case 'join_request_received':
+        return `projects/${n.project}?manage=requests`
+      case 'member_joined':
+      case 'join_request_approved':
+      case 'join_request_rejected':
+        return `/projects/${n.project}`
+      default:
+        return `/projects/${n.project}/tasks`
+    }
+  }
 
 // Turns a date into "Just now", "5m ago", "2h ago", "3d ago", or "Sep 19"
 const timeAgo = (value) => {
@@ -510,11 +533,11 @@ export default function Header({ hasSidebar = false }) {
       console.log('Error marking notification as read', error);
     }
 
-    const destination = notification.type === 'member_joined'
-      ? `/projects/${notification.project}`
-      : `/projects/${notification.project}/tasks`;
+    // const destination = notification.type === 'member_joined'
+    //   ? `/projects/${notification.project}`
+    //   : `/projects/${notification.project}/tasks`;
 
-    navigate(destination);
+    navigate(getNotificationDestination(notification));
   }
 
   const handleClearAll = async () => {

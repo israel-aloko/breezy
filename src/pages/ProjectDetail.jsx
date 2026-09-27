@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import ProjectFormModal from '../components/ProjectFormModal'
 import InviteMemberModal from '../components/InviteMemberModal'
 import { IoPersonAddSharp } from 'react-icons/io5'
@@ -19,6 +19,14 @@ export default function ProjectDetail() {
     const [showEditForm, setShowEditForm] = useState(false)
     const [showInviteModal, setShowInviteModal] = useState(false)
 
+    const [searchParams, setSearchParams] = useSearchParams()
+    const manageTab = searchParams.get('manage')
+    useEffect(() => {
+        if (manageTab && project) {
+            setShowInviteModal(true)
+        }
+    }, [manageTab, project])
+
     const fetchProject = async () => {
         setLoading(true)
         try {
@@ -33,6 +41,7 @@ export default function ProjectDetail() {
             }
 
             setProject(data.project)
+            console.log('members:', data.project.members)
         } catch (error) {
             console.log('Error fetch project', error)
             toast.error(error.message || "Couldn't load this project.")
@@ -103,6 +112,52 @@ export default function ProjectDetail() {
         ? new Date(project.deadline).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
         : null
 
+    const adminCount = project?.members.filter(m => m.role === 'admin').length ?? 0
+    const isLastAdmin = isAdmin && adminCount === 1
+
+    const leaveProject = async () => {
+        try {
+            const res = await fetch(`${BASE_URL}/api/projects/${id}/leave`, {
+                method: 'POST',
+                credentials: 'include',
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to leave project')
+            }
+
+            toast.success('You left the project')
+            navigate('/projectdashboard')
+        } catch (error) {
+            toast.error(error.message)
+        }
+    };
+    const handleLeaveClick = () => {
+        toast((t) => (
+            <div className="flex flex-col gap-2">
+                <span className="font-semibold text-stone-900">Leave this project?</span>
+                <span>You'll lose to access to "{project.name}" and its tasks. You would need a new invite or join code to come back.</span>
+                <div className="flex gap-2 justify-end">
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="cursor-pointer px-3 py-1 text-sm rounded-lg border"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => { toast.dismiss(t.id); leaveProject() }}
+                        className="cursor-pointer px-3 py-1 text-sm rounded-lg bg-red-600 text-white font-semibold"
+                    >
+                        Leave project
+                    </button>
+                </div>
+            </div>
+        ), { duration: 8000 })
+    };
+
+    
     return (
         <div className="p-4 md:p-8 max-w-4xl mx-auto">
 
@@ -139,6 +194,15 @@ export default function ProjectDetail() {
                             </button>
                         </>
                     )}
+
+                    <button
+                        onClick={handleLeaveClick}
+                        disabled={isLastAdmin}
+                        title={isLastAdmin ? 'Promote another admin before leaving, or delete the project' : ''}
+                        className="cursor-pointer px-3 py-2 rounded-lg border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        Leave
+                    </button>
                 </div>
             </div>
 
@@ -181,12 +245,16 @@ export default function ProjectDetail() {
                 <InviteMemberModal
                     project={project}
                     isAdmin={isAdmin}
-                    onClose={() => setShowInviteModal(false)}
+                    initialTab={manageTab === 'requests' && isAdmin ? 'requests' : 'invite'}
+                    onClose={() => {
+                        setShowInviteModal(false)
+                        setSearchParams({}, { replace: true })
+                    }}
                     onUpdated={fetchProject}
                 />
             )}
 
-        {/* <TaskBoard/> */}
+            {/* <TaskBoard/> */}
 
         </div>
     )
