@@ -14,12 +14,12 @@ const COLUMNS = [
     { key: 'done', label: 'Done' },
 ]
 
-export default function TaskBoard() {
-    const { id } = useParams()
-    const navigate = useNavigate()
+export default function TaskBoard({ project }) {
+    // const { id } = useParams()
+    // const navigate = useNavigate()
     const currentUserId = useSelector(state => state.auth.userId)
 
-    const [project, setProject] = useState(null)
+    // const [project, setProject] = useState(null)
     const [tasks, setTasks] = useState([])
     const [loading, setLoading] = useState(false)
     const [showTaskForm, setShowTaskForm] = useState(false)
@@ -28,30 +28,15 @@ export default function TaskBoard() {
 
     // Fetches project (for name, header, and the members list the
     // TaskFormModal needs for its assignee dropdown) and tasks in parallel.
-    const fetchBoardData = async () => {
+    const fetchTasks = async () => {
         setLoading(true)
-        toast.loading('Loading board...', { id: 'board' })
         try {
-            const [projectRes, tasksRes] = await Promise.all([
-                fetch(`${BASE_URL}/api/projects/${id}`, { credentials: 'include' }),
-                fetch(`${BASE_URL}/api/projects/${id}/tasks`, { credentials: 'include' }),
-            ])
-
-            const projectData = await projectRes.json()
-            const tasksData = await tasksRes.json()
-
-            if (!projectRes.ok) {
-                throw new Error(projectData.message || 'Failed to fetch project')
-            }
-            if (!tasksRes.ok) {
-                throw new Error(tasksData.message || 'Failed to fetch tasks')
-            }
-
-            setProject(projectData.project)
-            setTasks(tasksData.tasks)
-            toast.dismiss('board')
+            const res = await fetch(`${BASE_URL}/api/projects/${project._id}/tasks`, { credentials: 'include' })
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.message || 'Failed to fetch tasks')
+            setTasks(data.tasks)
         } catch (error) {
-            console.log('Error fetching board data', error)
+            console.log('Error fetching tasks', error)
             toast.error(error.message || "Couldn't load the board.")
         } finally {
             setLoading(false)
@@ -59,10 +44,10 @@ export default function TaskBoard() {
     }
 
     useEffect(() => {
-        fetchBoardData()
-    }, [id])
+        fetchTasks()
+    }, [project._id])
 
-    const myMembership = project?.members.find(m => m.user._id === currentUserId)
+    const myMembership = project.members.find(m => m.user._id === currentUserId)
     const isAdmin = myMembership?.role === 'admin'
 
     const tasksByStatus = (statusKey) => tasks.filter((task) => task.status === statusKey)
@@ -76,18 +61,9 @@ export default function TaskBoard() {
     }
 
     return (
-        <div className="p-4 md:p-8 max-w-6xl mx-auto">
-
-            <div className="flex items-start justify-between mb-6 gap-4">
-                <div>
-                    <button
-                        onClick={() => navigate(`/projects/${id}`)}
-                        className="cursor-pointer text-xs font-medium text-stone-500 hover:text-stone-700 transition mb-1"
-                    >
-                        ← Back to project
-                    </button>
-                    <h1 className="text-2xl font-semibold text-stone-900">{project.name} — Board</h1>
-                </div>
+         <div>
+            <div className="flex items-center justify-between mb-4 gap-4">
+                <h2 className="text-lg font-semibold text-stone-900">Board</h2>
 
                 {isAdmin && (
                     <button
@@ -99,35 +75,39 @@ export default function TaskBoard() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {COLUMNS.map((column) => (
-                    <div key={column.key} className="bg-stone-50 rounded-lg p-3">
-                        <h2 className="text-sm font-semibold text-stone-700 uppercase mb-3 px-1">
-                            {column.label} ({tasksByStatus(column.key).length})
-                        </h2>
+            {loading && tasks.length === 0 ? (
+                <div className="p-8 text-center text-stone-500">Loading board...</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {COLUMNS.map((column) => (
+                        <div key={column.key} className="bg-stone-50 rounded-lg p-3">
+                            <h2 className="text-sm font-semibold text-stone-700 uppercase mb-3 px-1">
+                                {column.label} ({tasksByStatus(column.key).length})
+                            </h2>
 
-                        <div className="flex flex-col gap-2">
-                            {tasksByStatus(column.key).length > 0 ? (
-                                tasksByStatus(column.key).map((task) => (
-                                    <TaskCard
-                                        key={task._id}
-                                        task={task}
-                                        isAdmin={isAdmin}
-                                        currentUserId={currentUserId}
-                                        onUpdated={fetchBoardData}
-                                        onEdit={(t) => { setEditingTask(t); setShowTaskForm(true) }}
-                                        onOpen={(t) => setSelectedTask(t)}
-                                    />
-                                ))
-                            ) : (
-                                <div className="text-xs text-stone-400 text-center py-6">
-                                    No tasks here
-                                </div>
-                            )}
+                            <div className="flex flex-col gap-2">
+                                {tasksByStatus(column.key).length > 0 ? (
+                                    tasksByStatus(column.key).map((task) => (
+                                        <TaskCard
+                                            key={task._id}
+                                            task={task}
+                                            isAdmin={isAdmin}
+                                            currentUserId={currentUserId}
+                                            onUpdated={fetchTasks}
+                                            onEdit={(t) => { setEditingTask(t); setShowTaskForm(true) }}
+                                            onOpen={(t) => setSelectedTask(t)}
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="text-xs text-stone-400 text-center py-6">
+                                        No tasks here
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {showTaskForm && (
                 <TaskFormModal
@@ -135,7 +115,7 @@ export default function TaskBoard() {
                     members={project.members}
                     task={editingTask}
                     onClose={() => { setShowTaskForm(false); setEditingTask(null) }}
-                    onSaved={() => { setShowTaskForm(false); setEditingTask(null); fetchBoardData() }}
+                    onSaved={() => { setShowTaskForm(false); setEditingTask(null); fetchTasks() }}
                 />
             )}
 

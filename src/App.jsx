@@ -23,6 +23,7 @@ import ProtectedRoute from './routes/ProtectedRoute'
 import SidebarLayout from './layouts/SidebarLayout'
 import { connectSocket, disconnectSocket, getSocket } from './socket'
 import { addNotification } from './features/reducers/notificationSlice'
+import Dashboard from './pages/Dashboard'
 
 export default function App() {
 
@@ -138,6 +139,7 @@ export default function App() {
         { path: 'projectdashboard', element: <ProjectsDashboard /> },
         { path: 'projects/:id', element: <ProjectDetail/>},
         { path: 'projects/:id/tasks', element: <TaskBoard/>},
+        { path: 'dashboard', element: <Dashboard/>},
 
       ],
     },

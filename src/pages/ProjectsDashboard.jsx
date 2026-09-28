@@ -35,11 +35,28 @@ export default function ProjectsDashboard() {
         } finally {
             setLoading(false)
         }
-    }
+    };
 
     useEffect(() => {
         fetchProjects()
-    }, [])
+    }, []);
+
+    //a projec tis overdue when it has a deadline which has passed.
+    const now = new Date()
+    const overdueProjects = projects.filter(
+        (p) => p.deadline && new Date(p.deadline) < now
+    )
+    const onTrackProjects = projects.filter(
+        (p) => !p.deadline || new Date(p.deadline) >= now
+    )
+
+    const renderGrid = (list) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols3 gap-4">
+            {list.map((project) => (
+                <ProjectCard key={project._id} {...project} isOverdue={overdueProjects.includes(project)}/>
+            ))}
+        </div>
+    )
 
     return (
         <div className="p-4 md:p-8">
@@ -61,21 +78,33 @@ export default function ProjectsDashboard() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {
-                    loading ? (
-                        <div className="col-span-full text-center">Loading...</div>
-                    ) : projects.length > 0 ? (
-                        projects.map((project) => (
-                            <ProjectCard key={project._id} {...project} />
-                        ))
-                    ) : (
-                        <div className="col-span-full text-center text-stone-500">
-                            You're not part of any projects yet.
+            {loading ? (
+                <div className="text-center">Loading...</div>
+            ) : projects.length === 0 ? (
+                <div className="text-center text-stone-500">
+                    You're not part of any projects yet.
+                </div>
+            ) : (
+                <>
+                    {overdueProjects.length > 0 && (
+                        <div className="mb-8">
+                            <h2 className="text-sm font-semibold text-red-700 uppercase tracking-wide mb-3">
+                                Overdue ({overdueProjects.length})
+                            </h2>
+                            {renderGrid(overdueProjects)}
                         </div>
-                    )
-                }
-            </div>
+                    )}
+
+                    <div>
+                        {overdueProjects.length > 0 && (
+                            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                                On Track
+                            </h2>
+                        )}
+                        {renderGrid(onTrackProjects)}
+                    </div>
+                </>
+            )}
 
             {showForm && (
                 <ProjectFormModal
