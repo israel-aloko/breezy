@@ -68,7 +68,9 @@ export default function TaskBoard({ project }) {
                 {isAdmin && (
                     <button
                         onClick={() => { setEditingTask(null); setShowTaskForm(true) }}
-                        className="cursor-pointer flex-shrink-0 bg-green-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-green-800 transition shadow-sm"
+                        disabled={project.status === 'completed'}
+                        title={project.status === 'completed' ? 'This project has been completed. Reopen it to add new tasks.' : ''}
+                        className="cursor-pointer flex-shrink-0 bg-green-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-green-800 transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-green-700"
                     >
                         + New Task
                     </button>

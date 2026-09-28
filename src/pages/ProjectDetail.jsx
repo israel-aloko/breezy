@@ -185,6 +185,84 @@ export default function ProjectDetail() {
         ), { duration: 8000 })
     };
 
+    const completeProject = async (force = false) => {
+        try {
+            const res = await fetch(`${BASE_URL}/api/projects/${id}/complete`, {
+                method: 'PATCH',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ force }),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to complete project')
+            }
+
+            if (data.requiresConfirmation) {
+                toast((t) => (
+                    <div className="flex flex-col gap-2">
+                        <span className="font-semibold text-stone 900">Not all tasks are done</span>
+                        <span>
+                            {data.incompleteCount} task{data.incompleteCount !== 1 ? 's' : ''} in "{project.name}" {data.incompleteCount !== 1 ? "aren't" : "isn't"} marked done yet. Complete the project anyway?
+                        </span>
+                        <div className="flex gap-2 justify-end">
+                            <button 
+                                onClick={() => toast.dismiss(t.id)}
+                                className="cursor-pointer px-3 py-1 text-sm rounded-lg border"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={() => {toast.dismiss(t.id); completeProject(true) }}
+                                className="cursor-pointer px-3 py-1 text-sm rounded-lg border"
+                            >
+                                Complete anyway
+                            </button>
+                        </div>
+                    </div>
+                ), {duration: 8000})
+                return
+            }
+
+            toast.success('Project marked as completed')
+            fetchProject()
+        } catch (error) {
+            toast.error(error.message)
+        }
+    };
+
+    const handleCompleteClick = () => {
+        setMenuOpen(false)
+        completeProject(false)
+    };
+
+    const reopenProject = async () => {
+        try {
+            const res = await fetch(`${BASE_URL}/api/projects/${id}/reopen`, {
+                method: 'PATCH',
+                credentials: 'include',
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to reopen project')
+            }
+
+            toast.success('Project reopened')
+            fetchProject()
+        } catch (error) {
+            toast.error(error.message)
+        }
+    };
+
+    const handleReopenClick = () => {
+        setMenuOpen(false)
+        reopenProject()
+    };
+
 
     if (loading && !project) {
         return <div className="p-8 text-center text-stone-500">Loading project...</div>
@@ -238,6 +316,29 @@ export default function ProjectDetail() {
                             role="menu"
                             className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20"
                         >
+
+                            {isAdmin && project.status === 'active' && (
+                                <button 
+                                    role="menuitem"
+                                    onClick={handleCompleteClick}
+                                    className="cursor-pointer w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition"
+                                    >
+                                        Mark as completed
+                                </button>
+                            )}
+                            {isAdmin && project.status === 'completed' && (
+                                <button 
+                                    role="menuitem"
+                                    onClick={handleReopenClick}
+                                    className="cursor-pointer w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition"
+                                >
+                                    Reopen project
+
+                                </button>
+                            )}
+
+
+
                             {isAdmin && (
                                 <button
                                     role="menuitem"
@@ -273,6 +374,11 @@ export default function ProjectDetail() {
 
             <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-y border-gray-100">
                 <div className="flex items-center gap-4 flex-wrap">
+                    {project.status === 'completed' && (
+                        <span className="inline-flex items-center gap-1 5 text-xs font-medium text-green-800 bg-green-500 border border-green-100 px-2.5 py-1 rounded-full">
+                            Completed
+                        </span>
+                    )}
                     {formattedDeadline && (
                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-800 bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-full">
                             Due {formattedDeadline}

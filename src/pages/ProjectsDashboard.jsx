@@ -41,22 +41,26 @@ export default function ProjectsDashboard() {
         fetchProjects()
     }, []);
 
-    //a projec tis overdue when it has a deadline which has passed.
+    // Every project lands in exactly one group, checked in this order:
+    // completed overrides overdue — a finished project isn't "late" anymore.
     const now = new Date()
+    const completedProjects = projects.filter((p) => p.status === 'completed')
     const overdueProjects = projects.filter(
-        (p) => p.deadline && new Date(p.deadline) < now
+        (p) => p.status !== 'completed' && p.deadline && new Date(p.deadline) < now
     )
     const onTrackProjects = projects.filter(
-        (p) => !p.deadline || new Date(p.deadline) >= now
+        (p) => p.status !== 'completed' && (!p.deadline || new Date(p.deadline) >= now)
     )
 
-    const renderGrid = (list) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols3 gap-4">
+    const renderGrid = (list, extraProps = {}) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {list.map((project) => (
-                <ProjectCard key={project._id} {...project} isOverdue={overdueProjects.includes(project)}/>
+                <ProjectCard key={project._id} {...project} {...extraProps} />
             ))}
         </div>
     )
+
+    const hasGroupedSections = completedProjects.length > 0 || overdueProjects.length > 0
 
     return (
         <div className="p-4 md:p-8">
@@ -91,18 +95,27 @@ export default function ProjectsDashboard() {
                             <h2 className="text-sm font-semibold text-red-700 uppercase tracking-wide mb-3">
                                 Overdue ({overdueProjects.length})
                             </h2>
-                            {renderGrid(overdueProjects)}
+                            {renderGrid(overdueProjects, { isOverdue: true })}
                         </div>
                     )}
 
-                    <div>
-                        {overdueProjects.length > 0 && (
+                    <div className="mb-8">
+                        {hasGroupedSections && (
                             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
                                 On Track
                             </h2>
                         )}
                         {renderGrid(onTrackProjects)}
                     </div>
+
+                    {completedProjects.length > 0 && (
+                        <div>
+                            <h2 className="text-sm font-semibold text-green-700 uppercase tracking-wide mb-3">
+                                Completed ({completedProjects.length})
+                            </h2>
+                            {renderGrid(completedProjects, { isCompleted: true })}
+                        </div>
+                    )}
                 </>
             )}
 
