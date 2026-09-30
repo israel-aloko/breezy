@@ -24,6 +24,7 @@ import SidebarLayout from './layouts/SidebarLayout'
 import { connectSocket, disconnectSocket, getSocket } from './socket'
 import { addNotification } from './features/reducers/notificationSlice'
 import Dashboard from './pages/Dashboard'
+import TasksDashboard from './pages/TasksDashboard'
 
 export default function App() {
 
@@ -140,6 +141,7 @@ export default function App() {
         { path: 'projects/:id', element: <ProjectDetail/>},
         { path: 'projects/:id/tasks', element: <TaskBoard/>},
         { path: 'dashboard', element: <Dashboard/>},
+        { path: 'taskdashboard', element: <TasksDashboard/>},
 
       ],
     },

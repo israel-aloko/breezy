@@ -6,7 +6,7 @@ import JoinRequestsPanel from './JoinRequestsPanel';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export default function InviteMemberModal({ project, isAdmin, initialTab = 'invite', onClose, onUpdated }) {
-    const [tab, setTab] = useState(initialTab); // invite, joincode, requests, members.
+    const [tab, setTab] = useState(isAdmin ? initialTab : 'members'); // invite, joincode, requests, members.
 
     const [mode, setMode] = useState('email');
     const [email, setEmail] = useState('');
@@ -200,13 +200,13 @@ export default function InviteMemberModal({ project, isAdmin, initialTab = 'invi
     const labelClass = "block text-xs font-medium text-[#00242b] uppercase mb-1"
 
     const tabs = [
+    ...(isAdmin ? [
         { key: 'invite', label: 'Invite' },
-        ...(isAdmin ? [
-            { key: 'joincode', label: 'Join Code'},
-            { key: 'requests', label: `Requests (${requestCount})` },
-        ] : []),
-        { key: 'members', label: `Members (${project.members.length})` },
-    ]
+        { key: 'joincode', label: 'Join Code' },
+        { key: 'requests', label: `Requests (${requestCount})` },
+    ] : []),
+    { key: 'members', label: `Members (${project.members.length})` },
+]
 
     return (
     //    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -377,7 +377,7 @@ export default function InviteMemberModal({ project, isAdmin, initialTab = 'invi
  
                 <div className="px-6 py-4 overflow-y-auto">
  
-                    {tab === 'invite' && (
+                    {tab === 'invite' && isAdmin && (
                         <>
                             <div className="flex border-b border-gray-100 mb-4">
                                 <button

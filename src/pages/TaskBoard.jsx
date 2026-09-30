@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
-import { useNavigate, useParams } from 'react-router-dom'
 import TaskCard from '../components/TaskCard'
 import TaskFormModal from '../components/TaskFormModal'
 import TaskDetailModal from '../components/TaskDetailModal'
@@ -15,20 +14,16 @@ const COLUMNS = [
 ]
 
 export default function TaskBoard({ project }) {
-    // const { id } = useParams()
-    // const navigate = useNavigate()
     const currentUserId = useSelector(state => state.auth.userId)
 
-    // const [project, setProject] = useState(null)
     const [tasks, setTasks] = useState([])
     const [loading, setLoading] = useState(false)
     const [showTaskForm, setShowTaskForm] = useState(false)
     const [editingTask, setEditingTask] = useState(null)
-    const [selectedTask, setSelectedTask] = useState(null)
+    const [selectedTaskId, setSelectedTaskId] = useState(null)
 
-    // Fetches project (for name, header, and the members list the
-    // TaskFormModal needs for its assignee dropdown) and tasks in parallel.
     const fetchTasks = async () => {
+        if (!project?._id) return
         setLoading(true)
         try {
             const res = await fetch(`${BASE_URL}/api/projects/${project._id}/tasks`, { credentials: 'include' })
@@ -44,24 +39,26 @@ export default function TaskBoard({ project }) {
     }
 
     useEffect(() => {
+        if (!project?._id) return
         fetchTasks()
-    }, [project._id])
+    }, [project?._id])
 
-    const myMembership = project.members.find(m => m.user._id === currentUserId)
+    const myMembership = project?.members.find(m => m.user._id === currentUserId)
     const isAdmin = myMembership?.role === 'admin'
 
     const tasksByStatus = (statusKey) => tasks.filter((task) => task.status === statusKey)
 
-    if (loading && !project) {
-        return <div className="p-8 text-center text-stone-500">Loading board...</div>
-    }
+    // Derived from the latest fetched tasks, so it never goes stale
+    const selectedTask = selectedTaskId
+        ? tasks.find((t) => t._id === selectedTaskId) || null
+        : null
 
     if (!project) {
         return <div className="p-8 text-center text-stone-500">Project not found.</div>
     }
 
     return (
-         <div>
+        <div>
             <div className="flex items-center justify-between mb-4 gap-4">
                 <h2 className="text-lg font-semibold text-stone-900">Board</h2>
 
@@ -97,7 +94,7 @@ export default function TaskBoard({ project }) {
                                             currentUserId={currentUserId}
                                             onUpdated={fetchTasks}
                                             onEdit={(t) => { setEditingTask(t); setShowTaskForm(true) }}
-                                            onOpen={(t) => setSelectedTask(t)}
+                                            onOpen={(t) => setSelectedTaskId(t._id)}
                                         />
                                     ))
                                 ) : (
@@ -126,7 +123,9 @@ export default function TaskBoard({ project }) {
                     task={selectedTask}
                     members={project.members}
                     currentUserId={currentUserId}
-                    onClose={() => setSelectedTask(null)}
+                    isAdmin={isAdmin}
+                    onClose={() => setSelectedTaskId(null)}
+                    onUpdated={fetchTasks}
                 />
             )}
         </div>

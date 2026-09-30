@@ -82,7 +82,7 @@ export default function ProjectDetail() {
             }
 
             setProject(data.project)
-            console.log('members:', data.project.members)
+            // console.log('members:', data.project.members)
         } catch (error) {
             console.log('Error fetch project', error)
             toast.error(error.message || "Couldn't load this project.")

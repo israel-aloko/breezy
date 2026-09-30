@@ -332,28 +332,66 @@ import { setNotifications, markOneRead, markAllRead } from '../features/reducers
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
+const formatDate = (d) =>
+  d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : null
+
 const describeNotification = (n, currentUserId) => {
   const actorName = n.actor?.fullname || 'Someone'
   const { type, metadata = {} } = n
+  const project = metadata.projectName || 'the project'
 
   switch (type) {
     case 'task_assigned':
-      return metadata.assignedTo === currentUserId
-        ? `${actorName} assigned you to "${metadata.taskTitle}"`
-        : `You were unassigned from "${metadata.taskTitle}"`
+      return `${actorName} assigned you to "${metadata.taskTitle}"`
+    case 'task_unassigned':
+      return `${actorName} unassigned you from "${metadata.taskTitle}"`
+    case 'task_updated': {
+      if (metadata.field === 'deadline') {
+        const due = formatDate(metadata.to)
+        return due
+          ? `${actorName} changed the deadline of "${metadata.taskTitle}" to ${due}`
+          : `${actorName} removed the deadline from "${metadata.taskTitle}"`
+      }
+      return `${actorName} updated "${metadata.taskTitle}"`
+    }
     case 'task_status_changed':
       return `${actorName} moved "${metadata.taskTitle}" to ${metadata.to}`
     case 'task_deleted':
       return `${actorName} deleted "${metadata.taskTitle}"`
 
-    case 'member_joined':
-      return `${actorName} joined ${metadata.projectName || 'your project'}`
-    // case 'comment_mention':
-    //   return `${actorName} mentioned you in a comment on "${metadata.taskTitle}"`
+    case 'task_deadline_approaching':
+      return `"${metadata.taskTitle}" is due tomorrow in ${project}`
+    case 'task_due_today':
+      return `"${metadata.taskTitle}" is due today in ${project}`
+    case 'project_deadline_approaching':
+      return `${project} is due tomorrow`
+    case 'project_due_today':
+      return `${project} is due today`
 
+    case 'member_role_changed':
+      return metadata.newRole === 'admin'
+        ? `${actorName} promoted you to admin in ${project}`
+        : `${actorName} changed your role to member in ${project}`
+    case 'member_removed':
+      return `${actorName} removed you from ${project}`
+    case 'member_left': {
+      const n2 = metadata.unassignedTaskCount
+      return n2
+        ? `${actorName} left ${project} and ${n2} task${n2 > 1 ? 's were' : ' was'} unassigned`
+        : `${actorName} left ${project}`
+    }
+    case 'member_joined':
+      return `${actorName} joined ${project}`
+
+    case 'project_completed':
+      return `${actorName} marked ${project} as completed`
+    case 'project_reopened':
+      return `${actorName} reopened ${project}`
+    case 'project_deleted':
+      return `${actorName} deleted ${project}`
     case 'comment_mention':
       return `${actorName} mentioned you in a comment on "${metadata.taskTitle}": "${metadata.excerpt}"`
-    
+
 
     case 'comment_reply':
       return `${actorName} replied to your comment on "${metadata.taskTitle}"`
@@ -363,30 +401,42 @@ const describeNotification = (n, currentUserId) => {
 
     case 'join_request_received':
       return `${actorName} requested to join ${metadata.projectName || 'your project'}`
-    
+
     case 'join_request_approved':
       return `${actorName} approved your request to join ${metadata.projectName || 'the project'}`
 
     case 'join_request_rejected':
       return `Your request to join ${metadata.projectName || 'the project'} was declined`
-      
+
     default:
       return `${actorName} did something`
   }
 }
 
 const getNotificationDestination = (n) => {
-    switch (n.type) {
-      case 'join_request_received':
-        return `projects/${n.project}?manage=requests`
-      case 'member_joined':
-      case 'join_request_approved':
-      case 'join_request_rejected':
-        return `/projects/${n.project}`
-      default:
-        return `/projects/${n.project}/tasks`
-    }
+  switch (n.type) {
+    case 'member_removed':
+    case 'project_deleted':
+      return null
+
+    case 'join_request_received':
+      return `/projects/${n.project}?manage=requests`
+
+    case 'member_joined':
+    case 'member_left':
+    case 'member_role_changed':
+    case 'join_request_approved':
+    case 'join_request_rejected':
+    case 'project_completed':
+    case 'project_reopened':
+    case 'project_deadline_approaching':
+    case 'project_due_today':
+      return `/projects/${n.project}`
+
+    default:
+      return `/projects/${n.project}`
   }
+}
 
 // Turns a date into "Just now", "5m ago", "2h ago", "3d ago", or "Sep 19"
 const timeAgo = (value) => {
@@ -537,7 +587,10 @@ export default function Header({ hasSidebar = false }) {
     //   ? `/projects/${notification.project}`
     //   : `/projects/${notification.project}/tasks`;
 
-    navigate(getNotificationDestination(notification));
+    //2.
+    // navigate(getNotificationDestination(notification));
+    const destination = getNotificationDestination(notification);
+    if (destination) navigate(destination);
   }
 
   const handleClearAll = async () => {

@@ -44,7 +44,7 @@ export default function SideBar() {
                            <LuFolderKanban/> Projects
                         </Link>
                         <Link
-                            to="/projectdashboard"
+                            to="/taskdashboard"
                             className="px-4 py-3 rounded-lg hover:bg-[#012c35] transition flex items-center gap-3"
                         >
                            <FaTasks/> Tasks

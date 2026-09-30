@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import toast from 'react-hot-toast'
+import { FiMessageSquare } from 'react-icons/fi'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -19,11 +20,10 @@ export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEd
     const [updating, setUpdating] = useState(false)
     const [deleting, setDeleting] = useState(false)
 
-    const isAssignee = task.assignedTo && task.assignedTo._id === currentUserId
+    const isAssignee = !!task.assignedTo && String(task.assignedTo._id) === String(currentUserId)
+    const canChangeStatus = isAssignee
     const isUnassigned = !task.assignedTo
-    // Matches the backend rule exactly: the assignee owns status. If nobody
-    // is assigned yet, an admin can still move it since there's no assignee to.
-    const canChangeStatus = isAssignee || (isUnassigned && isAdmin)
+
 
     const formattedDeadline = task.deadline
         ? new Date(task.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -111,7 +111,10 @@ export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEd
     return (
         <div
             onClick={() => onOpen(task)}
-            className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm cursor-pointer hover:border-green-700/40 hover:shadow-sm duration-200">
+            onKeyDown={(e) => { if (e.target === e.currentTarget && e.key === 'Enter') onOpen(task)}}
+            role="button"
+            tabIndex={0}
+            className="group bg-white border border-gray-100 rounded-lg p-3 shadow-sm cursor-pointer hover:border-green-700/40 hover:shadow-sm transition focus:outline-none focus:ring-2 focus:ring-green-700/30 duration-200">
             <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className="text-sm font-medium text-stone-800">{task.title}</h3>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -172,6 +175,13 @@ export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEd
                     ))}
                 </select>
             )}
+
+            <div className="flex items-center gap-1 mt-3 pt-2 border-t border-gray-100 text-xs text-stone-400 group-hover:text-green-700 transition">
+                <FiMessageSquare className="w-3.5 h-3.5"/>
+                {task.commentCount > 0
+                    ? `${task.commentCount} ${task.commentCount === 1 ? 'Comment' : 'Comments'}`
+                    : 'Add comment'}
+            </div>
         </div>
     )
 }
