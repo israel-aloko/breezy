@@ -59,7 +59,6 @@ export default function SideBar() {
                         <Link to="/homepage"><img className="w-32" src={LOGOS.greenlogo} alt="Logo" /></Link>
                     </div>
 
-                    {/* Navigation */}
                     <nav className="flex flex-col p-4 gap-1 flex-1 overflow-y-auto">
                         {navItems.map(({ to, label, icon: Icon }) => (
                             <NavLink
@@ -78,14 +77,15 @@ export default function SideBar() {
                         ))}
                     </nav>
 
-                    {/* Profile card, pinned to the bottom */}
                     <div className="p-3 border-t border-[#27614a]">
                         <div className="relative" ref={menuRef}>
                             {menuOpen && (
                                 <div className="absolute bottom-full mb-2 left-0 right-0 rounded-xl bg-[#012c35] border border-[#27614a] shadow-xl py-1">
                                     <Link
                                         to="/profile"
-                                        onClick={() => setMenuOpen(false)}
+                                        onClick={() => {setMenuOpen(false)
+                                                        setNavOpen(false)
+                                        }}
                                         className="block px-4 py-2.5 text-sm hover:bg-[#00242b]"
                                     >
                                         Profile
@@ -105,7 +105,6 @@ export default function SideBar() {
                                 onClick={() => setMenuOpen((open) => !open)}
                                 className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-[#012c35] transition text-left"
                             >
-                                {/* Avatar circle: only the picture or initials go in here */}
                                 <div className="w-10 h-10 rounded-full bg-[#27614a] flex items-center justify-center shrink-0 overflow-hidden text-sm font-semibold">
                                     {profilePicture ? (
                                         <img src={profilePicture} alt={fullname} className="w-full h-full object-cover" />
@@ -114,7 +113,6 @@ export default function SideBar() {
                                     )}
                                 </div>
 
-                                {/* Name and email: a separate block beside the circle */}
                                 <div className="min-w-0 flex-1">
                                     <p className="text-sm font-medium truncate">{fullname}</p>
                                     <p className="text-xs text-gray-400 truncate">{email}</p>
