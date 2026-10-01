@@ -461,11 +461,19 @@ export default function Header({ hasSidebar = false }) {
   const loggedIn = auth.isAuthenticated;
   const currentUserId = auth.userId;
 
-  const handleLogout = () => {
-    localStorage.removeItem("loggedInUser");
-    dispatch(logout());
-    window.location.href = "/login";
+  const handleLogout = async () => {
+  try {
+    await fetch(`${BASE_URL}/api/users/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.log('Error logging out', error);
   }
+  localStorage.removeItem('loggedInUser');
+  dispatch(logout());
+  window.location.href = '/login';
+};
 
   const location = useLocation();
 

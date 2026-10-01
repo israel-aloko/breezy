@@ -24,7 +24,7 @@ export default function Login() {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 credentials: 'include',
                 body: JSON.stringify({ email, password }),
             });
@@ -43,17 +43,16 @@ export default function Login() {
                 role: data.role,
             };
 
-            dispatch(setUser(userPayload));
-            localStorage.setItem("loggedInUser", JSON.stringify(userPayload));
+            dispatch(setUser(userPayload))
+            localStorage.setItem("loggedInUser", JSON.stringify(userPayload)) // keep only if you were already doing this
 
             toast.success("Login successful!");
-            setTimeout(() => {
-                if (data.role === "admin") {
-                    navigate("/admin");
-                } else {
-                    navigate(from)
-                }
-            }, 1500);
+
+            if (data.role === "admin") {
+                navigate("/admin", { replace: true })
+            } else {
+                navigate(from, { replace: true })
+            }
 
         } catch (err) {
             toast.error("Something went wrong. Please try again.");
@@ -97,8 +96,8 @@ export default function Login() {
         }
     }
 
-  return (
-    <div className="flex flex-col">
+    return (
+        <div className="flex flex-col">
 
             {/* <div className="relative bg-cover bg-center h-[25vh] md:h-[40vh] text-white" style={{ backgroundImage: `url(${BACKGROUNDS.contact_background})` }}>
                 <div className="absolute inset-0 bg-black/50">
@@ -186,5 +185,5 @@ export default function Login() {
             </div>
 
         </div>
-  )
+    )
 }

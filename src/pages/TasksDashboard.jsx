@@ -2,8 +2,9 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
-import TaskCard from '../components/TaskCard';
+import TaskCard from '../components/TaskCard'
 import TaskDetailModal from '../components/TaskDetailModal';
+import Calendar from '../components/Calendar';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -221,7 +222,7 @@ export default function TasksDashboard() {
                 <h1 className="text-2xl font-semibold">My Tasks</h1>
 
                 <div className="flex rounded-lg border border-gray-200 overflow-hidden text-sm font-medium">
-                    {['board', 'list'].map((v) => (
+                    {['board', 'list', 'calendar'].map((v) => (
                         <button
                             key={v}
                             onClick={() => setView(v)}
@@ -296,6 +297,8 @@ export default function TasksDashboard() {
                 </div>
             ) : filteredTasks.length === 0 ? (
                 <div className="p-8 text-center text-stone-500">No tasks match these filters.</div>
+            ) : view === 'calendar' ? (
+                <Calendar tasks={filteredTasks} onOpen={openTask}/>
             ) : view === 'board' ? (
                 renderBoard()
             ) : (
@@ -308,6 +311,7 @@ export default function TasksDashboard() {
                     members={selectedMembers}
                     currentUserId={currentUserId}
                     onClose={() => setSelectedTask(null)}
+                    onUpdated={fetchTasks}
                 />
             )}
         </div>

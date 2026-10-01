@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import toast from 'react-hot-toast'
-import { FiMessageSquare } from 'react-icons/fi'
+import { FaRegComment } from 'react-icons/fa'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -177,7 +177,7 @@ export default function TaskCard({ task, isAdmin, currentUserId, onUpdated, onEd
             )}
 
             <div className="flex items-center gap-1 mt-3 pt-2 border-t border-gray-100 text-xs text-stone-400 group-hover:text-green-700 transition">
-                <FiMessageSquare className="w-3.5 h-3.5"/>
+                <FaRegComment className="w-3.5 h-3.5"/>
                 {task.commentCount > 0
                     ? `${task.commentCount} ${task.commentCount === 1 ? 'Comment' : 'Comments'}`
                     : 'Add comment'}

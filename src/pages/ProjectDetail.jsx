@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import ProjectFormModal from '../components/ProjectFormModal'
 import InviteMemberModal from '../components/InviteMemberModal'
-import { IoEllipsisHorizontal, IoPersonAddSharp } from 'react-icons/io5'
+import { IoBarChartSharp, IoEllipsisHorizontal, IoPersonAddSharp } from 'react-icons/io5'
 import TaskBoard from './TaskBoard'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -208,21 +208,21 @@ export default function ProjectDetail() {
                             {data.incompleteCount} task{data.incompleteCount !== 1 ? 's' : ''} in "{project.name}" {data.incompleteCount !== 1 ? "aren't" : "isn't"} marked done yet. Complete the project anyway?
                         </span>
                         <div className="flex gap-2 justify-end">
-                            <button 
+                            <button
                                 onClick={() => toast.dismiss(t.id)}
                                 className="cursor-pointer px-3 py-1 text-sm rounded-lg border"
                             >
                                 Cancel
                             </button>
-                            <button 
-                                onClick={() => {toast.dismiss(t.id); completeProject(true) }}
+                            <button
+                                onClick={() => { toast.dismiss(t.id); completeProject(true) }}
                                 className="cursor-pointer px-3 py-1 text-sm rounded-lg border"
                             >
                                 Complete anyway
                             </button>
                         </div>
                     </div>
-                ), {duration: 8000})
+                ), { duration: 8000 })
                 return
             }
 
@@ -281,9 +281,9 @@ export default function ProjectDetail() {
 
     const visibleMembers = project.members.slice(0, MAX_AVATARS)
     const extraMembers = project.members.length - visibleMembers.length
-    
+
     return (
-       <div className="p-4 md:p-8 max-w-6xl mx-auto">
+        <div className="p-4 md:p-8 max-w-6xl mx-auto">
 
             <button
                 onClick={() => navigate('/projectdashboard')}
@@ -318,16 +318,16 @@ export default function ProjectDetail() {
                         >
 
                             {isAdmin && project.status === 'active' && (
-                                <button 
+                                <button
                                     role="menuitem"
                                     onClick={handleCompleteClick}
                                     className="cursor-pointer w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition"
-                                    >
-                                        Mark as completed
+                                >
+                                    Mark as completed
                                 </button>
                             )}
                             {isAdmin && project.status === 'completed' && (
-                                <button 
+                                <button
                                     role="menuitem"
                                     onClick={handleReopenClick}
                                     className="cursor-pointer w-full text-left px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition"
@@ -415,12 +415,23 @@ export default function ProjectDetail() {
                     </button>
                 </div>
 
-                <button
-                    onClick={() => setShowInviteModal(true)}
-                    className="flex flex-row gap-2 items-center justify-center cursor-pointer flex-shrink-0 bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-green-800 transition shadow-sm"
-                >
-                    <IoPersonAddSharp />{isAdmin ? 'Manage members' : 'View members'}
-                </button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    {isAdmin && (
+                        <button
+                            onClick={() => navigate(`/projects/${id}/dashboard`)}
+                            className="flex flex-row gap-2 items-center justify-center cursor-pointer px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-stone-600 hover:bg-gray-50 transition"
+                        >
+                            <IoBarChartSharp />Analytics
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setShowInviteModal(true)}
+                        className="flex flex-row gap-2 items-center justify-center cursor-pointer bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-green-800 transition shadow-sm"
+                    >
+                        <IoPersonAddSharp />{isAdmin ? 'Manage members' : 'View members'}
+                    </button>
+                </div>
+
             </div>
 
             <div className="mt-8">

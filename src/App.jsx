@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Header from './components/Header'
-import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom'
 import Homepage from './pages/Homepage'
 import Footer from './components/Footer'
 import MainLayout from './layouts/MainLayout'
@@ -13,7 +13,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import VerifyResetCode from './pages/VerifyResetCode'
 import ResetPassword from './pages/ResetPassword'
 import ProjectsDashboard from './pages/ProjectsDashboard'
-import { setUser } from './features/reducers/authSlice'
+import { fetchCurrentUser, setUser } from './features/reducers/authSlice'
 import ProjectDetail from './pages/ProjectDetail'
 import MyInvites from './pages/MyInvites'
 import InviteLanding from './pages/InviteLanding'
@@ -25,10 +25,22 @@ import { connectSocket, disconnectSocket, getSocket } from './socket'
 import { addNotification } from './features/reducers/notificationSlice'
 import Dashboard from './pages/Dashboard'
 import TasksDashboard from './pages/TasksDashboard'
+import CalendarPage from './pages/CalendarPage'
+import ProjectAnalytics from './pages/ProjectAnalytics'
+import ProfilePage from './pages/ProfilePage'
 
+function HomeRoute() {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+  return isAuthenticated ? <Navigate to ="/projectdashboard" replace/> : <Homepage />
+}
 export default function App() {
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser())
+  }, [dispatch])
+
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
@@ -142,6 +154,9 @@ export default function App() {
         { path: 'projects/:id/tasks', element: <TaskBoard/>},
         { path: 'dashboard', element: <Dashboard/>},
         { path: 'taskdashboard', element: <TasksDashboard/>},
+        { path: 'calendar', element: <CalendarPage/>},
+        { path: 'projects/:id/dashboard', element: <ProjectAnalytics/>},
+        { path: '/profile', element: <ProfilePage/>},
 
       ],
     },
@@ -150,7 +165,8 @@ export default function App() {
       path: '/',
       element: <MainLayout />,
       children: [
-        { index: true, element: <Homepage /> },
+        { index: true, element: <HomeRoute /> },
+        { path: 'homepage', element: <Homepage/>},
         { path: 'login', element: <Login /> },
         { path: 'signup', element: <SignUp /> },
         { path: 'verify-email', element: <VerifyEmail /> },
