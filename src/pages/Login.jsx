@@ -61,7 +61,7 @@ export default function Login() {
         }
     }
 
-    const handleGoogleSuccess = async (crendentialResponse) => {
+    const handleGoogleSuccess = async (credentialResponse) => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/google`, {
                 method: "POST",
@@ -97,7 +97,7 @@ export default function Login() {
     }
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col mt-20">
 
             {/* <div className="relative bg-cover bg-center h-[25vh] md:h-[40vh] text-white" style={{ backgroundImage: `url(${BACKGROUNDS.contact_background})` }}>
                 <div className="absolute inset-0 bg-black/50">

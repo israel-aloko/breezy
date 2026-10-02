@@ -90,13 +90,6 @@ export default function SideBar() {
                                     >
                                         Profile
                                     </Link>
-                                    <Link
-                                        to="/settings"
-                                        onClick={() => setMenuOpen(false)}
-                                        className="block px-4 py-2.5 text-sm hover:bg-[#00242b]"
-                                    >
-                                        Settings
-                                    </Link>
                                     
                                 </div>
                             )}

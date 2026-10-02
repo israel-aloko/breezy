@@ -73,7 +73,7 @@ export default function SignUp() {
         }
     }
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col mt-16">
 
             {/* <div className="relative bg-cover bg-center h-[25vh] md:h-[40vh] text-white" style={{ backgroundImage: `url(${BACKGROUNDS.contact_background})` }}>
                 <div className="absolute inset-0 bg-black/50">

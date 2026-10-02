@@ -324,7 +324,7 @@ export default function Header({ hasSidebar = false }) {
       <div className={`flex h-16 items-center gap-3 md:gap-4 px-4 md:px-8 ${hasSidebar ? "pl-16 md:pl-8" : ""}`}>
 
         {!hasSidebar && (
-          <a href="/"><img className="h-8 w-auto" src={LOGOS.izzyroots_logo} alt="" /></a>
+          <a href="/"><img className="h-8 w-auto" src={LOGOS.breezy_logo} alt="" /></a>
         )}
 
         {navLinks.length > 0 && (
